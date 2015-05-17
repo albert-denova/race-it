@@ -1,0 +1,227 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Race it!</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p2.js/0.6.1/p2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p2.js/0.6.1/p2.renderer.min.js"></script>
+    <link href="css/demo.css" rel="stylesheet"/>
+    <meta name="description" content="">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+</head>
+<body>
+    <script>
+        var app = new p2.WebGLRenderer(function(){
+            var world = new p2.World();
+            world.applyGravity=false;
+            world.solver.tolerance = 0.01;
+            
+            this.setWorld(world);
+            
+            // Define collision groups
+            var COLLISION_GROPUS = {
+                CIRCUIT: 1, 
+                CAR: 2,
+                OTHER: 8};
+
+            // Create straight tile
+            var addStraightTile = function(tilePosition) {
+                var topBlock = new p2.Body({mass:0, position: [
+                    tilePosition[0],
+                    tilePosition[1] + 2
+                ]});
+                var bottomBlock = new p2.Body({mass:0, position: [
+                    tilePosition[0],
+                    tilePosition[1] - 2
+                ]});
+                
+                var block = new p2.Rectangle(2,1);
+                topBlock.addShape(block);
+                bottomBlock.addShape(block);
+                
+                world.addBody(topBlock);
+                world.addBody(bottomBlock);
+            };
+            
+            addStraightTile([0,0]);
+            addStraightTile([2,0]);
+            addStraightTile([4,0]);
+            
+            var torque = 0;
+            var upTorque = 0;
+            var createCar = function(carPosition) {
+                var car = new p2.Body({ mass: 1, position: carPosition});
+                var carBodyShape = new p2.Rectangle(1, 0.5);
+                
+                car.addShape(carBodyShape);
+                world.addBody(car);
+                console.log(COLLISION_GROPUS.CAR);
+                //car.collisionGroup = COLLISION_GROPUS.CAR;
+                //car.collisionMask = COLLISION_GROPUS.CAR | COLLISION_GROPUS.CIRCUIT | COLLISION_GROPUS.OTHER;
+                
+                
+                world.on("postStep",function(evt){                    
+                    car.force[0] = torque;                    
+                    car.force[1] = upTorque;
+                    app.centerCamera(car.position[0], car.position[1]);
+                });
+            };
+            
+            createCar([0,0]);
+            
+            // Change the current engine torque with the left/right keys
+            this.on("keydown",function(evt){
+                t = 1;
+                switch(evt.keyCode){
+                    case 39: // right
+                        torque = -t;
+                        break;
+                    case 37: // left
+                        torque = t;
+                        break;
+                    case 38: // up
+                        upTorque = t;
+                        break;
+                        
+                    case 40: // down
+                        upTorque = -t;
+                        break;
+                }
+            });
+        });
+        
+        // Create demo application
+        /*
+        var app = new p2.WebGLRenderer(function(){
+
+            var world = new p2.World({
+                gravity : [0,-10]
+            });
+
+            this.setWorld(world);
+
+            world.solver.tolerance = 0.01;
+
+            // Set large friction - needed for powerful vehicle engine!
+            world.defaultContactMaterial.friction = 10;
+
+            // Create ground
+            var data = [];
+            var numDataPoints = 10000;
+            for(var i=0; i<numDataPoints; i++){
+                data.push(0.5*Math.cos(0.2*i) * Math.sin(0.5*i) + 0.6*Math.sin(0.1*i) * Math.sin(0.05*i));
+            }
+            var heightfieldShape = new p2.Heightfield(data,{
+                elementWidth: 1
+            });
+            var heightfield = new p2.Body({
+                position:[-10,-1]
+            });
+            heightfield.addShape(heightfieldShape);
+            world.addBody(heightfield);
+
+
+            // Create chassis
+            var chassisBody = new p2.Body({ mass : 1, position:[-4,1] }),
+                chassisShape = new p2.Rectangle(1,0.5);
+            chassisBody.addShape(chassisShape);
+            world.addBody(chassisBody);
+
+            // Create wheels
+            var wheelBody1 = new p2.Body({ mass : 1, position:[chassisBody.position[0] - 0.5,0.7] }),
+                wheelBody2 = new p2.Body({ mass : 1, position:[chassisBody.position[0] + 0.5,0.7] }),
+                wheelShape = new p2.Circle(0.3);
+            wheelBody1.addShape(wheelShape);
+            wheelBody2.addShape(wheelShape);
+            world.addBody(wheelBody1);
+            world.addBody(wheelBody2);
+
+            // Disable collisions between chassis and wheels
+            var WHEELS =  1, // Define bits for each shape type
+                CHASSIS = 2,
+                GROUND =  4,
+                OTHER =   8;
+
+            wheelShape  .collisionGroup =   WHEELS; // Assign groups
+            chassisShape.collisionGroup =   CHASSIS;
+            heightfieldShape  .collisionGroup =   GROUND;
+
+            wheelShape  .collisionMask =    GROUND | OTHER;             // Wheels can only collide with ground
+            chassisShape.collisionMask =    GROUND | OTHER;             // Chassis can only collide with ground
+            heightfieldShape  .collisionMask =    WHEELS | CHASSIS | OTHER;   // Ground can collide with wheels and chassis
+
+            // Constrain wheels to chassis
+            var c1 = new p2.PrismaticConstraint(chassisBody,wheelBody1,{
+                localAnchorA : [-0.5,-0.3],
+                localAnchorB : [0,0],
+                localAxisA : [0,1],
+                disableRotationalLock : true,
+            });
+            var c2 = new p2.PrismaticConstraint(chassisBody,wheelBody2,{
+                localAnchorA : [ 0.5,-0.3],
+                localAnchorB : [0,0],
+                localAxisA : [0,1],
+                disableRotationalLock : true,
+            });
+            c1.setLimits(-0.4, 0.2);
+            c2.setLimits(-0.4, 0.2);
+            world.addConstraint(c1);
+            world.addConstraint(c2);
+
+            // Add springs for the suspension
+            var stiffness = 100,
+                damping = 5,
+                restLength = 0.5;
+            // Left spring
+            world.addSpring(new p2.LinearSpring(chassisBody, wheelBody1, {
+                restLength : restLength,
+                stiffness : stiffness,
+                damping : damping,
+                localAnchorA : [-0.5,0],
+                localAnchorB : [0,0],
+            }));
+            // Right spring
+            world.addSpring(new p2.LinearSpring(chassisBody, wheelBody2, {
+                restLength : restLength,
+                stiffness : stiffness,
+                damping : damping,
+                localAnchorA : [0.5,0],
+                localAnchorB : [0,0],
+            }));
+
+            this.newShapeCollisionGroup = OTHER;
+            this.newShapeCollisionMask =  GROUND|WHEELS|CHASSIS|OTHER;
+
+            // Apply current engine torque after each step
+            var torque = 0;
+            world.on("postStep",function(evt){
+                wheelBody1.angularForce += torque;
+                wheelBody2.angularForce += torque;
+                app.centerCamera(chassisBody.position[0], chassisBody.position[1]);
+            });
+
+            // Change the current engine torque with the left/right keys
+            this.on("keydown",function(evt){
+                t = 5;
+                switch(evt.keyCode){
+                    case 39: // right
+                        torque = -t;
+                        break;
+                    case 37: // left
+                        torque = t;
+                        break;
+                }
+            });
+            this.on("keyup",function(){
+                torque = 0;
+            });
+
+            world.on("addBody",function(evt){
+                evt.body.setDensity(1);
+            });
+        });
+        */
+    </script>
+</body>
+</html>
