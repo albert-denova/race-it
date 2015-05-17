@@ -48,47 +48,130 @@
             addStraightTile([2,0]);
             addStraightTile([4,0]);
             
-            var torque = 0;
-            var upTorque = 0;
+            var steeringAngle = 0;
+            var engineSpeed = 0;
             var createCar = function(carPosition) {
-                var car = new p2.Body({ mass: 1, position: carPosition});
+                var carBody = new p2.Body({ mass: 1, position: carPosition});
                 var carBodyShape = new p2.Rectangle(1, 0.5);
                 
-                car.addShape(carBodyShape);
-                world.addBody(car);
-                console.log(COLLISION_GROPUS.CAR);
+                carBody.addShape(carBodyShape);
+                carBody.damping = 1;
+                carBody.angularDamping = 1;
+                world.addBody(carBody);
+                
                 //car.collisionGroup = COLLISION_GROPUS.CAR;
                 //car.collisionMask = COLLISION_GROPUS.CAR | COLLISION_GROPUS.CIRCUIT | COLLISION_GROPUS.OTHER;
                 
+                // Add wheels
+                var createWheel = function(pivot) {
+                    var position = [carPosition[0] + pivot[0], carPosition[1] + pivot[1]];
+                                        
+                    var wheelBody = new p2.Body({ mass:1, position: position});
+                    var wheelBodyShape = new p2.Rectangle(0.25, 0.15);
+                    wheelBody.addShape(wheelBodyShape);
+                    world.addBody(wheelBody);
+
+                    // Revolutes lets the connected bodies rotate around a shared point.
+                    var constraint = null;
+                    
+                    if(pivot[0] > 0) {                           
+                        constraint = new p2.RevoluteConstraint(carBody, wheelBody, {
+                            localPivotA: pivot,   // Where to hinge first wheel on the chassis
+                            localPivotB: [0, 0],
+                            collideConnected: false
+                        });
+                                            
+                        constraint.setLimits(-0.45, 0.45);
+                    }
+                    else {
+                        constraint = new p2.LockConstraint(carBody, wheelBody,{
+                            collideConnected : false
+                        });   
+                    }
+                    
+                    world.addConstraint(constraint);    
+                    
+                    return {
+                        'body' : wheelBody,
+                        'constraint' : constraint
+                    };
+                };
                 
-                world.on("postStep",function(evt){                    
-                    car.force[0] = torque;                    
-                    car.force[1] = upTorque;
-                    app.centerCamera(car.position[0], car.position[1]);
+                var leftFrontWheel = createWheel([0.25,0.25]);
+                var rightFrontWheel = createWheel([0.25,-0.25]);
+                var leftBackWheel = createWheel([-0.25,0.25]);                
+                var rightBackWheel = createWheel([-0.25,-0.25]);
+                
+                leftFrontWheel.constraint.enableMotor();                
+                rightFrontWheel.constraint.enableMotor();
+                leftFrontWheel.constraint.setMotorSpeed(0);
+                rightFrontWheel.constraint.setMotorSpeed(0);
+                
+                world.on("postStep",function(evt){                          
+                    // Steering
+                    var leftSteeringSpeed = steeringAngle + leftFrontWheel.constraint.angle;                   
+                    leftFrontWheel.constraint.setMotorSpeed(leftSteeringSpeed * 2);
+                    
+                    var rightSteeringSpeed = steeringAngle + rightFrontWheel.constraint.angle;    
+                    rightFrontWheel.constraint.setMotorSpeed(rightSteeringSpeed * 2);
+                                        
+                    var leftAngle = leftFrontWheel.body.angle;
+                    
+                    //console.log(engineSpeed, Math.cos(leftAngle), Math.sin(leftAngle));
+                    
+                    leftFrontWheel.body.applyForce([
+                        engineSpeed * Math.cos(leftAngle), engineSpeed * Math.sin(leftAngle)], 
+                        leftFrontWheel.body.position);
+                    
+                    rightFrontWheel.body.applyForce([
+                        engineSpeed * Math.cos(leftAngle), engineSpeed * Math.sin(leftAngle)],
+                        rightFrontWheel.body.position);
+                    
+                    //console.log([engineSpeed, 0], leftFrontWheel.body.position);
+                    app.centerCamera(carBody.position[0], carBody.position[1]);
                 });
+                
             };
             
             createCar([0,0]);
             
             // Change the current engine torque with the left/right keys
+            
             this.on("keydown",function(evt){
-                t = 1;
+                var maxSteeringAngle = Math.PI/3;
+                var speed = 100;
                 switch(evt.keyCode){
                     case 39: // right
-                        torque = -t;
+                        steeringAngle = maxSteeringAngle;
                         break;
                     case 37: // left
-                        torque = t;
+                        steeringAngle = -maxSteeringAngle;
                         break;
                     case 38: // up
-                        upTorque = t;
+                        engineSpeed = speed;
                         break;
                         
                     case 40: // down
-                        upTorque = -t;
+                        engineSpeed = -speed;
                         break;
                 }
+                
+                //console.log(steeringAngle, upTorque);
             });
+            
+            this.on("keyup",function(evt) {
+               switch(evt.keyCode) {
+                   case 39:
+                   case 37:                                    
+                       steeringAngle = 0;
+                       break;
+                   case 38:
+                   case 40:
+                       engineSpeed = 0;
+                       break;
+               }
+            });
+            
         });
         
         // Create demo application
