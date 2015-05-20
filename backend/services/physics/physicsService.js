@@ -1,4 +1,9 @@
 var p2 = require('p2');
+
+// Using the car this way is gonna be a problem, we will not be able to test this class
+// isolated since it's always depending on a Car itself, we could, for example, pass a CarFactory
+// instead to solve this issue: exports.PhysicsService = function(carFactory);
+// That would allow us to mock the carFactory and really test what's going on!
 var Car = require('./model/car.js').Car;
 
 exports.PhysicsService = function() {
@@ -26,6 +31,8 @@ exports.PhysicsService = function() {
             world: createWorld(),
             cars: []
         };
+        
+        //TODO: do something with circuitDefinition, it should fill the world with it.
         
         activeCircuits.push(circuit);
         
