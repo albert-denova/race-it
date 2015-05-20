@@ -9,6 +9,7 @@ exports.Car = function(world, position) {
     var WHEEL_HEIGHT = 0.15;
     var REVOLUTE_CONSTRAINT_MIN = -0.45;
     var REVOLUTE_CONSTRAINT_MAX = 0.45;
+    var STEERING_FACTOR = 2;
     
     // Attributes   
     var mWorld = null;
@@ -22,20 +23,29 @@ exports.Car = function(world, position) {
         return mPosition;  
     };
     
-    this.setMotorSpeed = function(motorSpeed) {
+    this.turnWheel = function(angle) {
         for(var wheelIndex in mFrontWheels) {
             var wheelConstraint = mFrontWheels[wheelIndex].constraint;
             if(!wheelConstraint.getMotorSpeed()) {
                 wheelConstraint.enableMotor();   
             }
+            
+            var motorSpeed = (angle + wheelConstraint.angle) * STEERING_FACTOR;    
+            
             wheelConstraint.setMotorSpeed(motorSpeed);
         }
     };
     
-    this.applyForce = function(force) {
+    this.accelerate = function(velocity) {
         for(var wheelIndex in mFrontWheels) {
             var wheelBody = mFrontWheels[wheelIndex].body;                        
-            wheelBody.applyForce(force, wheelBody.position);            
+            
+            var forceToApply = [
+                velocity * Math.cos(wheelBody.angle),
+                velocity * Math.sin(wheelBody.angle)
+            ];
+            
+            wheelBody.applyForce(forceToApply, wheelBody.position);
         }
     };
         

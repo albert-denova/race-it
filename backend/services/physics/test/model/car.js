@@ -110,33 +110,37 @@ module.exports = {
         test.equal(rightFrontConstraint.getMotorSpeed(), false);
         test.done();
     },
-    setMotorSpeed: function(test) {
+    turnWheel: function(test) {
         var carPosition = [100, 100];
         var motorSpeed = 30;
         
         var car = new Car(this.world, carPosition);
-        car.setMotorSpeed(motorSpeed);
+        car.turnWheel(motorSpeed);
                 
         var leftFrontConstraint = this.world.constraints[0];
         var rightFrontConstraint = this.world.constraints[2];
         
-        test.equal(leftFrontConstraint.getMotorSpeed(), motorSpeed);
-        test.equal(rightFrontConstraint.getMotorSpeed(), motorSpeed);
+        test.equal(leftFrontConstraint.getMotorSpeed(), motorSpeed * 2); // By default angle is0
+        test.equal(rightFrontConstraint.getMotorSpeed(), motorSpeed * 2);
         test.done();
     },
-    applyForce : function(test) {
+    accelerate : function(test) {
         var carPosition = [100, 100];
-        var forceToApply = [40,30];
+        var velocity = [40];
         
         var car = new Car(this.world, carPosition);
-        car.applyForce(forceToApply);
+        car.accelerate(velocity);
         
         var leftFrontwheelBody = this.world.bodies[1];
+        
+        var finalXForce = velocity * Math.cos(0); // By default angle is 0
+        var finalYForce = velocity * Math.sin(0); // yes, sin(0) is 0...but makes sense, I guess
+        
         var rightFrontWheelBody = this.world.bodies[3];
-        test.equal(leftFrontwheelBody.force[0], forceToApply[0]);
-        test.equal(leftFrontwheelBody.force[1], forceToApply[1]);
-        test.equal(rightFrontWheelBody.force[0], forceToApply[0]);
-        test.equal(rightFrontWheelBody.force[1], forceToApply[1]);
+        test.equal(leftFrontwheelBody.force[0], finalXForce);
+        test.equal(leftFrontwheelBody.force[1], finalYForce);
+        test.equal(rightFrontWheelBody.force[0], finalXForce);
+        test.equal(rightFrontWheelBody.force[1], finalYForce);
         test.done();
     }
 };
