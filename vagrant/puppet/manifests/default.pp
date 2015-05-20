@@ -54,6 +54,18 @@ class socket_install {
     }
 }
 
+class p2_install {
+    exec { 'install-p2':
+        command => 'npm install -g p2'
+    }
+}
+
+class nodeunit_install {
+    exec { 'install-nodeunit':
+        command => 'npm install -g nodeunit'
+    }
+}
+
 include system-update
 include system-upgrade
 include js_packages
@@ -62,3 +74,5 @@ include bower_install
 include grunt_install
 include express_install
 include socket_install
+include p2_install
+include nodeunit_install

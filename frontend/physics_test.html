@@ -127,6 +127,8 @@
                         engineSpeed * Math.cos(leftAngle), engineSpeed * Math.sin(leftAngle)],
                         rightFrontWheel.body.position);
                     
+                    if(engineSpeed != 0) debugger;
+                    
                     //console.log([engineSpeed, 0], leftFrontWheel.body.position);
                     app.centerCamera(carBody.position[0], carBody.position[1]);
                 });
