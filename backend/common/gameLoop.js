@@ -6,28 +6,28 @@ exports.GameLoop = function() {
     var TICK_MARGIN = 16;
         
     // Attributes
-    var fastLoopServices = [];
-    var slowLoopServices = [];
-    var previousFastTick = Date.now();
-    var previousSlowTick = Date.now();
-    var fastLoopTimeout  = null;
-    var slowLoopTimeout  = null;
+    var mFastLoopServices = [];
+    var mSlowLoopServices = [];
+    var mPreviousFastTick = Date.now();
+    var mPreviousSlowTick = Date.now();
+    var mFastLoopTimeout  = null;
+    var mSlowLoopTimeout  = null;
     
     // Public methods
     this.registerFastLoopService = function(service) {
-        fastLoopServices.push(service);
+        mFastLoopServices.push(service);
     };
     
     this.getFastLoopServiceCount = function() {
-        return fastLoopServices.length;  
+        return mFastLoopServices.length;  
     };
     
     this.registerSlowLoopService = function(service) {
-        slowLoopServices.push(service);
+        mSlowLoopServices.push(service);
     };
     
     this.getSlowLoopServiceCount = function() {
-        return slowLoopServices.length;  
+        return mSlowLoopServices.length;  
     };
     
     this.activate = function() {        
@@ -35,13 +35,13 @@ exports.GameLoop = function() {
         executeSlowLoop();
     };
     
-    this.desactivate = function() {   
-        if(fastLoopTimeout) { 
-            clearTimeout(fastLoopTimeout);
+    this.deactivate = function() {   
+        if(mFastLoopTimeout) { 
+            clearTimeout(mFastLoopTimeout);
         }
         
-        if(slowLoopTimeout) {
-            clearTimeout(slowLoopTimeout);   
+        if(mSlowLoopTimeout) {
+            clearTimeout(mSlowLoopTimeout);   
         }
     };
     
@@ -49,35 +49,35 @@ exports.GameLoop = function() {
     var executeFastLoop = function() {
         var now = Date.now();
         
-        updateFastLoopServices(now - previousFastTick);
+        updateFastLoopServices(now - mPreviousFastTick);
         
-        previousFastTick = now;
-        fastLoopTimeout = setTimeout(executeFastLoop, FAST_TICK_LENGTH_IN_MILLISECONDS);
+        mPreviousFastTick = now;
+        mFastLoopTimeout = setTimeout(executeFastLoop, FAST_TICK_LENGTH_IN_MILLISECONDS);
     };
     
     var executeSlowLoop = function() {
         var now = Date.now();
         
-        updateSlowLoopServices(now - previousSlowTick);
+        updateSlowLoopServices(now - mPreviousSlowTick);
         
-        previousSlowTick = now;
-        slowLoopTimeout = setTimeout(executeFastLoop, SLOW_TICK_LENGTH_IN_MILLISECONDS);
+        mPreviousSlowTick = now;
+        mSlowLoopTimeout = setTimeout(executeFastLoop, SLOW_TICK_LENGTH_IN_MILLISECONDS);
     };
     
     var calculateDeltaTime = function(date) {
-        return  (now - previousFastTick) / 1000;     
+        return  (now - mPreviousFastTick) / 1000;     
     };
     
     var updateFastLoopServices = function(deltaTime) {        
-        for(var index in fastLoopServices) {
-            var service = fastLoopServices[index];
+        for(var index in mFastLoopServices) {
+            var service = mFastLoopServices[index];
             service.update(deltaTime);
         }  
     };
     
     var updateSlowLoopServices = function(deltaTime) {
-        for(var index in slowLoopServices) {
-            var service = slowLoopServices[index];
+        for(var index in mSlowLoopServices) {
+            var service = mSlowLoopServices[index];
             service.update(deltaTime);
         }  
     };

@@ -51,6 +51,12 @@ class express_install {
 class socket_install {
     exec { 'install-socket': 
         command => 'npm install -g socket.io'
+    }    
+}
+
+class socket_mock_install {
+    exec { 'install-socket-mock':
+        command => 'npm install -g socket-io-mock'
     }
 }
 
@@ -74,5 +80,6 @@ include bower_install
 include grunt_install
 include express_install
 include socket_install
+include socket_mock_install
 include p2_install
 include nodeunit_install

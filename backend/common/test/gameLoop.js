@@ -1,16 +1,15 @@
-var p2 = require('p2');
 var GameLoop = require('../gameLoop.js').GameLoop;
 
 // Fixtures
 var MockService = function() {
-    var timesCalledUpdate = 0;
+    var mTimesCalledUpdate = 0;
     
     this.update = function() {
-        ++timesCalledUpdate;
+        ++mTimesCalledUpdate;
     };
     
     this.getTimesCalledUpdate = function() {
-        return timesCalledUpdate;    
+        return mTimesCalledUpdate;    
     };  
 };
 
@@ -44,7 +43,7 @@ module.exports = {
         
         // First activation will trigger an update, which will allow us to check that works
         this.gameLoop.activate();
-        this.gameLoop.desactivate();
+        this.gameLoop.deactivate();
         
         var timesCalledUpdate = this.mockService.getTimesCalledUpdate();
             
@@ -56,7 +55,7 @@ module.exports = {
         
         // First activation will trigger an update, which will allow us to check that works
         this.gameLoop.activate();
-        this.gameLoop.desactivate();
+        this.gameLoop.deactivate();
         
         var timesCalledUpdate = this.mockService.getTimesCalledUpdate();
             

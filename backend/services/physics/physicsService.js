@@ -14,7 +14,6 @@ exports.PhysicsService = function() {
     var CAR_ACCELERATION = 100;
     var WHEEL_TURN = Math.PI/3;
     
-    
     // Attributes
     var activeCircuits = [];
     
