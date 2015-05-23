@@ -135,6 +135,14 @@ exports.PhysicsService = function() {
         return renderInformation;
     };
     
+    this.getActiveCircuitId = function() {
+        var activeCircuitId = undefined;
+        if(mActiveCircuits.length > 0) {
+            activeCircuitId = 1;   
+        }
+        return activeCircuitId;
+    };
+    
     
     // Private
     var createWorld = function() {

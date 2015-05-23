@@ -17,11 +17,14 @@ exports.GameFacade = function() {
     };
     
     this.update = function(deltaTime) {
-        // Gather all information and call callback
-        
         // Inform listener 
-        if(this.mListener) {
-            this.mListener.onGameUpdated();
+        if(this.mListener) { 
+            // Gather all information and call callback
+            var informationForClient = {};
+            informationForClient.physics = mPhysicsService.getRenderInformation();
+        
+                   
+            this.mListener.onGameUpdated(informationForClient);
         }
     };    
     
@@ -29,10 +32,29 @@ exports.GameFacade = function() {
        this.mListener = listener; 
     };
     
+    this.enterGame = function() {
+        var circuitId = getActiveCircuitIdOrCreateNew();
+        var carId = mPhysicsService.addCar(circuitId);
+        
+        return {
+            circuitId: circuitId,
+            carId: carId
+        };
+    };
+    
     // Private
     var createPhysicsService = function() {
         mPhysicsService = new PhysicsService();
         mGameLoop.registerFastLoopService(mPhysicsService);
+    };
+    
+    var getActiveCircuitIdOrCreateNew = function() {        
+        var circuitId = mPhysicsService.getActiveCircuitId();
+        if(!circuitId) {
+            circuitId = mPhysicsService.createCircuit([0]);
+        }
+        
+        return circuitId;        
     };
     
     // Constructor

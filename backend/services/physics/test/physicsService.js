@@ -212,6 +212,18 @@ module.exports = {
         test.equal(secondCar.renderInformation.wheelAngularForce, 0);
         
         test.done();
-    }
-    
+    },
+    getActiveCircuitIdWithNoneActive: function(test) {
+        var activeCircuitId = this.physicsService.getActiveCircuitId();
+        test.equal(activeCircuitId, undefined);
+        test.done();
+    },
+    getActiveCircuitId: function(test) {
+        var circuitDefinition = [1];
+        var circuitId = this.physicsService.createCircuit(circuitDefinition);
+        
+        var activeCircuitId = this.physicsService.getActiveCircuitId();
+        test.equal(circuitId, activeCircuitId);
+        test.done();
+    }    
 };
