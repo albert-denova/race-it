@@ -1,13 +1,15 @@
-var express = require('express');
-var http = require('http');
-var socketIo = require('socket.io');
+var Express = require('express');
+var Http = require('http');
+var SocketIo = require('socket.io');
+var GameFacade = require('../gameFacade.js').GameFacade;
+var SocketMediator = require('./game/socketMediator.js').SocketMediator;
 
 // Set static resources to use
-var app = express();
+var app = Express();
 app.use(express.static(__dirname + '/../frontend'));
 
 // Create listener in 8080
-var server = http.createServer(app);
+var server = Http.createServer(app);
 server.listen(8080, function () {
   var host = server.address().address;
   var port = server.address().port;
@@ -15,8 +17,12 @@ server.listen(8080, function () {
   console.log('Example app listening at http://%s:%s', host, port);
 });
 
+// Create game
+var gameFacade = new GameFacade();
+gameFacade.init();
+
 // Listen to socket on connection
-var io = socketIo.listen(server);
+var io = SocketIo.listen(server);
 io.on('connection', function(socket){
   console.log('New user connected');
     
@@ -24,6 +30,6 @@ io.on('connection', function(socket){
     console.log('User disconnected');
   });
     
-  var socketMediator = require('./game/socketMediator.js').SocketMediator(socket);
-    
+  var socketMediator = new SocketMediator(gameFacade, socket);    
 });
+
