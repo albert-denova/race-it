@@ -142,5 +142,23 @@ module.exports = {
         test.equal(rightFrontWheelBody.force[0], finalXForce);
         test.equal(rightFrontWheelBody.force[1], finalYForce);
         test.done();
+    },
+    getRenderInformation: function(test) {
+        var carPosition = [100, 100];
+        var velocity = [40];
+        
+        var car = new Car(this.world, carPosition);
+        car.accelerate(velocity);
+        
+        var renderInformation = car.getRenderInformation();
+                
+        test.equal(renderInformation.position[0], 100);
+        test.equal(renderInformation.position[1], 100);
+        test.equal(renderInformation.angle, 0);
+        test.equal(renderInformation.wheelForce[0], 40);
+        test.equal(renderInformation.wheelForce[1], 0);
+        test.equal(renderInformation.wheelAngularForce, 0);        
+                        
+        test.done();
     }
 };

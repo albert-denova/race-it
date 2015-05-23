@@ -10,6 +10,7 @@ exports.Car = function(world, position) {
     var REVOLUTE_CONSTRAINT_MIN = -0.45;
     var REVOLUTE_CONSTRAINT_MAX = 0.45;
     var STEERING_FACTOR = 2;
+    var UNIT_CIRCLE_AREA_RADS = (2*Math.PI);
     
     // Attributes   
     var mWorld = null;
@@ -47,6 +48,24 @@ exports.Car = function(world, position) {
             
             wheelBody.applyForce(forceToApply, wheelBody.position);
         }
+    };
+    
+    this.getRenderInformation = function() {        
+        var bodyPosition = [mBody.position[0], mBody.position[1]];
+        
+        // We only need the first one since we apply always the same force to both wheels
+        var firstWheelBody = mFrontWheels[0].body;
+        var wheelForce = [firstWheelBody.force[0], firstWheelBody.force[1]];
+        var wheelAngularforce = firstWheelBody.angularForce;
+        
+        var renderInformation = {
+            position: bodyPosition,
+            angle: getBodyNormalizedAngle(), 
+            wheelForce: wheelForce,
+            wheelAngularForce: wheelAngularforce
+        };
+        
+        return renderInformation;
     };
         
     // Private methods
@@ -93,6 +112,17 @@ exports.Car = function(world, position) {
             'body' : wheelBody,
             'constraint' : constraint
         };
+    };
+    
+    var getBodyNormalizedAngle = function() {
+        var bodyAngle = mBody.angle;
+        
+        var normalizedAngle = bodyAngle % UNIT_CIRCLE_AREA_RADS;
+        if(normalizedAngle < 0){
+            normalizedAngle += UNIT_CIRCLE_AREA_RADS;
+        }
+        
+        return normalizedAngle;  
     };
         
     // Constructor

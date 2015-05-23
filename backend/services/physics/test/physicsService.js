@@ -176,6 +176,42 @@ module.exports = {
         
         test.equal(turnWheeldCarId, undefined);
         test.done();
+    },
+    getCarRenderInformation: function(test) {
+        var circuitDefinition = [1];
+        var circuitId = this.physicsService.createCircuit(circuitDefinition);
+        
+        var createdCarId = this.physicsService.addCar(circuitId);
+        var direction = this.physicsService.TURN_WHEEL_LEFT_DIRECTION;
+        var turnWheeldCarId = this.physicsService.turnCarWheel(circuitId, createdCarId, direction);
+        
+        var createdSecondCarId = this.physicsService.addCar(circuitId);
+        var acceleratedCarId = this.physicsService.accelerateCar(circuitId, createdSecondCarId);
+        
+        
+        var renderInformation = this.physicsService.getRenderInformation(circuitId);
+        var carRenderInformation = renderInformation.cars;        
+        test.equal(carRenderInformation.length, 2);
+        
+        var firstCar = carRenderInformation[0];
+        test.equal(firstCar.id, 1);
+        test.equal(firstCar.renderInformation.position[0], 0);
+        test.equal(firstCar.renderInformation.position[1], 0);
+        test.equal(firstCar.renderInformation.angle, 0);
+        test.equal(firstCar.renderInformation.wheelForce[0], 0);
+        test.equal(firstCar.renderInformation.wheelForce[1], 0);
+        test.equal(firstCar.renderInformation.wheelAngularForce, 0);
+        
+        var secondCar = carRenderInformation[1];
+        test.equal(secondCar.id, 2);
+        test.equal(secondCar.renderInformation.position[0], 0);
+        test.equal(secondCar.renderInformation.position[1], 0);
+        test.equal(secondCar.renderInformation.angle, 0);
+        test.equal(secondCar.renderInformation.wheelForce[0], 100);
+        test.equal(secondCar.renderInformation.wheelForce[1], 0);
+        test.equal(secondCar.renderInformation.wheelAngularForce, 0);
+        
+        test.done();
     }
     
 };
