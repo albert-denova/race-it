@@ -1,12 +1,12 @@
 var Express = require('express');
 var Http = require('http');
 var SocketIo = require('socket.io');
-var GameFacade = require('../gameFacade.js').GameFacade;
-var SocketMediator = require('./game/socketMediator.js').SocketMediator;
+var GameFacade = require('./common/gameFacade.js').GameFacade;
+var SocketMediator = require('./common/socketMediator.js').SocketMediator;
 
 // Set static resources to use
 var app = Express();
-app.use(express.static(__dirname + '/../frontend'));
+app.use(Express.static(__dirname + '/../frontend'));
 
 // Create listener in 8080
 var server = Http.createServer(app);
