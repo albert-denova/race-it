@@ -190,7 +190,12 @@ module.exports = {
         
         
         var renderInformation = this.physicsService.getRenderInformation(circuitId);
-        var carRenderInformation = renderInformation.cars;        
+        test.equal(renderInformation.length, 1);
+        
+        var circuitRenderInformation = renderInformation[0];
+        test.equal(circuitRenderInformation.id, circuitId);
+        
+        var carRenderInformation = circuitRenderInformation.cars;        
         test.equal(carRenderInformation.length, 2);
         
         var firstCar = carRenderInformation[0];

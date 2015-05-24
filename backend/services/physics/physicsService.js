@@ -121,16 +121,25 @@ exports.PhysicsService = function() {
         return updatedCarId; 
     };
     
+    // TODO: remove circuitId and return array of circuits, then each socketMediator will
+    // filter which circuit does he need the information from. That way both services
+    // and gameFacade are agnostic to the fact that multiple circuits may exist
     this.getRenderInformation = function(circuitId) {        
-        var renderInformation = {
-            circuit: null,
-            cars: []
-        };
+        var renderInformation = [];
         
-        var circuit = getCircuit(circuitId);
-        if(circuit) {
-            renderInformation.cars = getCarsRenderInformation(circuit);
+        for(index in mActiveCircuits) {
+            var circuit = mActiveCircuits[index];
+            if(circuit) {
+                var circuitRenderInformation = {
+                    id: parseInt(index) + 1,
+                    circuit: null,
+                    cars: getCarsRenderInformation(circuit)
+                };
+                renderInformation.push(circuitRenderInformation);
+            }   
         }
+        
+        
         
         return renderInformation;
     };
