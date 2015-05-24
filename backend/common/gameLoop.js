@@ -46,7 +46,7 @@ exports.GameLoop = function() {
     };
     
     // Private methods
-    var executeFastLoop = function() {
+    var executeFastLoop = function() {        
         var now = Date.now();
         
         updateFastLoopServices(now - mPreviousFastTick);
@@ -61,7 +61,7 @@ exports.GameLoop = function() {
         updateSlowLoopServices(now - mPreviousSlowTick);
         
         mPreviousSlowTick = now;
-        mSlowLoopTimeout = setTimeout(executeFastLoop, SLOW_TICK_LENGTH_IN_MILLISECONDS);
+        mSlowLoopTimeout = setTimeout(executeSlowLoop, SLOW_TICK_LENGTH_IN_MILLISECONDS);
     };
     
     var calculateDeltaTime = function(date) {
