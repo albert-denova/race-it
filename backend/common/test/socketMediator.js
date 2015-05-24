@@ -8,6 +8,8 @@ var GameFacadeMock = function() {
     
     var mAcceleratedCars = 0;
     var mRegisteredListener = 0;
+    var mRemovedCars = 0;
+    var mRemovedCarId = -1;
     
     this.accelerateCar = function(carId) {
         if(!carId) {
@@ -23,6 +25,11 @@ var GameFacadeMock = function() {
         };
     };
     
+    this.removeCar = function(carId) {
+        mRemovedCars++;
+        mRemovedCarId = carId;
+    }
+    
     this.getNumberOfAcceleratedCars = function() {
         return mAcceleratedCars;  
     };
@@ -33,6 +40,14 @@ var GameFacadeMock = function() {
     
     this.getNumberOfRegisteredListeners = function() {
         return mRegisteredListener;  
+    };
+    
+    this.getNumberOfRemovedCars = function() {
+        return mRemovedCars;  
+    };
+    
+    this.getRemovedCarId = function() {
+        return mRemovedCarId;  
     };
 };
 
@@ -77,28 +92,97 @@ module.exports = {
         
         test.done();
     },
-    accelerateCarEvent: function (test) {        
+    accelerateNonUserCar: function (test) {
         var socketMediator = new SocketMediator(this.gameFacade, this.socketServer);
         
         this.socketServer.emitEvent('accelerateCar', 5);
         
         var timesAcceleratedCar = this.gameFacade.getNumberOfAcceleratedCars();
-        test.equal(timesAcceleratedCar, 1);
+        // No car should be accelerated if it's not your own car
+        test.equal(timesAcceleratedCar, 0);
         test.done();
     },
-    onGameUpdated: function (test) {
+    accelerateUserCar: function (test) {
+        var socketMediator = new SocketMediator(this.gameFacade, this.socketServer);
+        
+        var circuitId = null;
+        var carId = null;
+        var self = this;
+        this.socketClient.on('joinedGame', function(gameInformation) {            
+            circuitId = gameInformation.circuitId;
+            carId = gameInformation.carId;
+            
+            self.socketServer.emitEvent('accelerateCar', carId);
+        
+            var timesAcceleratedCar = self.gameFacade.getNumberOfAcceleratedCars();
+            test.equal(timesAcceleratedCar, 1);
+        });
+        
+        this.socketClient.emit('joinGame',{});   
+                
+        test.done();
+    },
+    onGameUpdatedWithoutJoiningGame: function (test) {
         var socketMediator = new SocketMediator(this.gameFacade, this.socketServer);
         // We only want to see that the information is propagated, we can put whatever we want.
         var renderInformation = {
-            physics: [0,1,2]
+            1: {
+                physics: [0,1,2]   
+            },
+            2: {
+                physics: [4,5,6]   
+            }
         };
-                
-        this.socketClient.on('logicGameUpdated', function(gameInformation) {
-            test.equal(gameInformation.physics.length, renderInformation.physics.length);
-            test.equal(gameInformation.physics[1], renderInformation.physics[1]);
+        
+        this.socketClient.on('logicGameUpdated', function(gameInformation) {            
+            test.equal(gameInformation, undefined);
         });
         
         socketMediator.onGameUpdated(renderInformation);
+        test.done();
+    },
+    onGameUpdatedWhenJoinedGame: function (test) {
+        var socketMediator = new SocketMediator(this.gameFacade, this.socketServer);
+        // We only want to see that the information is propagated, we can put whatever we want.
+        var renderInformation = {
+            1: {
+                physics: [0,1,2]   
+            },
+            2: {
+                physics: [4,5,6]   
+            }
+        };
+        
+        this.socketClient.emit('joinGame',{});
+                
+        this.socketClient.on('logicGameUpdated', function(gameInformation) {            
+            test.equal(gameInformation.physics.length, renderInformation[1].physics.length);
+            test.equal(gameInformation.physics[1], renderInformation[1].physics[1]);
+        });
+        
+        socketMediator.onGameUpdated(renderInformation);
+        test.done();
+    },
+    onUserDisconnectedWithoutJoiningGame: function (test) {
+        var socketMediator = new SocketMediator(this.gameFacade, this.socketServer);
+                
+        this.socketClient.emit('disconnect',{});
+        
+        var removedCars = this.gameFacade.getNumberOfRemovedCars();
+        test.equal(removedCars, 0);
+        test.done();
+    },
+    onUserDisconnectedAfterJoiningGame: function (test) {
+        var socketMediator = new SocketMediator(this.gameFacade, this.socketServer);
+                
+        this.socketClient.emit('joinGame',{});
+        this.socketClient.emit('disconnect',{});
+        
+        var removedCars = this.gameFacade.getNumberOfRemovedCars();
+        test.equal(removedCars, 1);
+        
+        var removedCarId = this.gameFacade.getRemovedCarId();
+        test.equal(removedCarId, 1);
         test.done();
     }
 };

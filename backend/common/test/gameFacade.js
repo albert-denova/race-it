@@ -78,5 +78,27 @@ module.exports = {
         test.equal(secondPlayerGameInformation.circuitId, firstPlayerGameInformation.circuitId);
         test.equal(secondPlayerGameInformation.carId, 2);
         test.done();
+    },
+    getCarsInCircuit: function(test) {
+        var gameFacade = new GameFacade();
+        
+        var firstPlayerGameInformation = gameFacade.enterGame();
+        var secondPlayerGameInformation = gameFacade.enterGame();
+        
+        var carsInCircuit = gameFacade.getNumberOfCarsInCircuit(firstPlayerGameInformation.circuitId);
+        test.equal(carsInCircuit, 2);           
+        test.done();        
+    },
+    removeCar: function(test) {
+        var gameFacade = new GameFacade();
+        
+        var firstPlayerGameInformation = gameFacade.enterGame();
+        var secondPlayerGameInformation = gameFacade.enterGame();
+        
+        gameFacade.removeCar(firstPlayerGameInformation.circuitId, firstPlayerGameInformation.carId);
+        
+        var carsInCircuit = gameFacade.getNumberOfCarsInCircuit(firstPlayerGameInformation.circuitId);
+        test.equal(carsInCircuit, 1);        
+        test.done();
     }
 };

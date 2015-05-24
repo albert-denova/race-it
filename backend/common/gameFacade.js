@@ -41,6 +41,14 @@ exports.GameFacade = function() {
         };
     };
     
+    this.removeCar = function(circuitId, carId) {
+        mPhysicsService.removeCar(circuitId, carId);
+    }
+    
+    this.getNumberOfCarsInCircuit = function(circuitId) {
+        return mPhysicsService.getNumberOfCarsInCircuit(circuitId);
+    }
+    
     // Private
     var createPhysicsService = function() {
         mPhysicsService = new PhysicsService();
