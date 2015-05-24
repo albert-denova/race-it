@@ -16,14 +16,13 @@ exports.GameFacade = function() {
         mGameLoop.deactivate();   
     };
     
-    this.update = function(deltaTime) {
+    this.update = function(deltaTime) {                
         // Inform listener 
         if(this.mListener) { 
             // Gather all information and call callback
             var informationForClient = {};
             informationForClient.physics = mPhysicsService.getRenderInformation();
-        
-                   
+            
             this.mListener.onGameUpdated(informationForClient);
         }
     };    
