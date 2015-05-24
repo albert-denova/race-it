@@ -29,7 +29,7 @@ exports.SocketMediator = function(gameFacade, socket) {
         console.log('User disconnected');
         
         if(mCarId != null) {
-            mGameFacade.removeCar(mCarId);
+            mGameFacade.removeCar(mCircuitId, mCarId);
         }
         
         mCircuitId = null;
@@ -44,8 +44,10 @@ exports.SocketMediator = function(gameFacade, socket) {
     // Private
     var filterInformationForUserCircuitId = function(allCircuitsRenderInformation) {
         var renderInformation = undefined;
-        if(mCircuitId) {            
-            renderInformation = allCircuitsRenderInformation[mCircuitId];            
+        if(mCircuitId) { 
+            renderInformation = {
+                physics: allCircuitsRenderInformation.physics[mCircuitId]
+            };
         }
         
         return renderInformation;
