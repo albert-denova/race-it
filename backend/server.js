@@ -24,12 +24,7 @@ gameFacade.init();
 // Listen to socket on connection
 var io = SocketIo.listen(server);
 io.on('connection', function(socket){
-  console.log('New user connected');
-    
-  socket.on('disconnect', function(){
-    console.log('User disconnected');
-  });
-    
+  console.log('New user connected');    
   var socketMediator = new SocketMediator(gameFacade, socket);    
 });
 
