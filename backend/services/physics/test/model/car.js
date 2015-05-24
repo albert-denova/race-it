@@ -160,5 +160,58 @@ module.exports = {
         test.equal(renderInformation.wheelAngularForce, 0);        
                         
         test.done();
+    },
+    removeFromWorld: function(test) {
+        var carPosition = [100,100];
+        var bodiesBeforeCarCreation = this.world.bodies.length;
+        var constraintsBeforeCarCreation = this.world.constraints.length;
+        var car = new Car(this.world, carPosition);
+        
+        car.destroy();
+        
+        var bodiesAfterCarDestroyal = this.world.bodies.length;        
+        var constraintsAfterCarDestroyal = this.world.constraints.length;
+        
+        test.equal(bodiesAfterCarDestroyal, bodiesBeforeCarCreation);        
+        test.equal(constraintsAfterCarDestroyal, constraintsBeforeCarCreation);        
+        test.done();
+    },
+    operationsAfterRemoval: function(test) {
+        var carPosition = [100,100];
+        var car = new Car(this.world, carPosition);
+        car.destroy();
+        
+        test.throws(
+            function() {
+                car.getPosition();
+            }, 
+            Error);
+        
+        test.throws(
+            function() {
+                car.turnWheel();
+            }, 
+            Error);
+        
+        test.throws(
+            function() {
+                car.accelerate();
+            }, 
+            Error);
+        
+        test.throws(
+            function() {
+                car.getRenderInformation();
+            }, 
+            Error);
+        
+        test.throws(
+            function() {
+                car.destroy();
+            }, 
+            Error);
+        
+        test.done();
     }
+    
 };

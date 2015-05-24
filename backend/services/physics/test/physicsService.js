@@ -190,9 +190,9 @@ module.exports = {
         
         
         var renderInformation = this.physicsService.getRenderInformation(circuitId);
-        test.equal(renderInformation.length, 1);
+        test.equal(Object.keys(renderInformation).length, 1);
         
-        var circuitRenderInformation = renderInformation[0];
+        var circuitRenderInformation = renderInformation[circuitId];
         test.equal(circuitRenderInformation.id, circuitId);
         
         var carRenderInformation = circuitRenderInformation.cars;        
@@ -230,5 +230,48 @@ module.exports = {
         var activeCircuitId = this.physicsService.getActiveCircuitId();
         test.equal(circuitId, activeCircuitId);
         test.done();
-    }    
+    },
+    getNumberOfCarsWhenNoCircuit: function(test) {
+        var numberOfCars = this.physicsService.getNumberOfCarsInCircuit(1);
+        test.equal(numberOfCars, -1);
+        test.done();
+    },
+    getNumberOfCarsInCircuit: function(test) {
+        var circuitDefinition = [1];
+        var circuitId = this.physicsService.createCircuit(circuitDefinition);
+        
+        var carId = this.physicsService.addCar(circuitId);
+        var numberOfCars = this.physicsService.getNumberOfCarsInCircuit(circuitId);
+        test.equal(numberOfCars, 1);
+        test.done();
+    },
+    removeCar: function(test) {
+        var circuitDefinition = [1];
+        var circuitId = this.physicsService.createCircuit(circuitDefinition);
+        
+        var carId = this.physicsService.addCar(circuitId);
+        this.physicsService.removeCar(circuitId, carId);
+        
+        var numberOfCarsInCircuit = this.physicsService.getNumberOfCarsInCircuit(circuitId);
+        test.equal(numberOfCarsInCircuit, 0);
+        test.done();
+    },
+    removeCarAndCheckOthersAreThere: function(test) {
+        var circuitDefinition = [1];
+        var circuitId = this.physicsService.createCircuit(circuitDefinition);
+        
+        var firstCarId = this.physicsService.addCar(circuitId);
+        var secondCarId = this.physicsService.addCar(circuitId);
+        
+        this.physicsService.removeCar(circuitId, firstCarId);
+        
+        var numberOfCarsInCircuit = this.physicsService.getNumberOfCarsInCircuit(circuitId);
+        test.equal(numberOfCarsInCircuit, 1);
+        
+        var acceleratedCarId = this.physicsService.accelerateCar(circuitId, secondCarId);
+        
+        test.equal(acceleratedCarId, secondCarId);
+        
+        test.done();        
+    }
 };

@@ -18,13 +18,18 @@ exports.Car = function(world, position) {
     var mBody = null;
     var mFrontWheels = [];
     var mBackWheels = [];
+    var mIsAlive = false;
     
     // Public methods
     this.getPosition = function() {
+        checkAlive();
+        
         return mPosition;  
     };
     
     this.turnWheel = function(angle) {
+        checkAlive();
+        
         for(var wheelIndex in mFrontWheels) {
             var wheelConstraint = mFrontWheels[wheelIndex].constraint;
             if(!wheelConstraint.getMotorSpeed()) {
@@ -38,6 +43,8 @@ exports.Car = function(world, position) {
     };
     
     this.accelerate = function(velocity) {
+        checkAlive();
+        
         for(var wheelIndex in mFrontWheels) {
             var wheelBody = mFrontWheels[wheelIndex].body;                        
             
@@ -51,6 +58,8 @@ exports.Car = function(world, position) {
     };
     
     this.getRenderInformation = function() {        
+        checkAlive();
+        
         var bodyPosition = [mBody.position[0], mBody.position[1]];
         
         // We only need the first one since we apply always the same force to both wheels
@@ -66,6 +75,28 @@ exports.Car = function(world, position) {
         };
         
         return renderInformation;
+    };
+    
+    this.destroy = function() {
+        checkAlive();
+        
+        for(var wheelIndex in mFrontWheels) {
+            var wheelBody = mFrontWheels[wheelIndex].body;                        
+            var wheelConstraint = mFrontWheels[wheelIndex].constraint;
+            mWorld.removeBody(wheelBody);
+            mWorld.removeConstraint(wheelConstraint);
+        }
+        
+        for(var wheelIndex in mBackWheels) {
+            var wheelBody = mBackWheels[wheelIndex].body;                        
+            var wheelConstraint = mBackWheels[wheelIndex].constraint;
+            mWorld.removeBody(wheelBody);
+            mWorld.removeConstraint(wheelConstraint);
+        }
+        
+        mWorld.removeBody(mBody);
+        
+        mIsAlive = false;
     };
         
     // Private methods
@@ -124,6 +155,12 @@ exports.Car = function(world, position) {
         
         return normalizedAngle;  
     };
+    
+    var checkAlive = function() {
+        if(!mIsAlive) {
+            throw new Error("This car has been destroyed and nothing can be done with it!");   
+        }
+    };
         
     // Constructor
     (function() {
@@ -143,5 +180,7 @@ exports.Car = function(world, position) {
         // Right wheels
         mFrontWheels.push(createWheel([0.25,-0.25]));
         mBackWheels.push(createWheel([-0.25,-0.25]));
+        
+        mIsAlive = true;
     })();
 };

@@ -15,7 +15,7 @@ exports.PhysicsService = function() {
     var WHEEL_TURN = Math.PI/3;
     
     // Attributes
-    var mActiveCircuits = [];
+    var mActiveCircuits = {};
     
     // Public
     this.createCircuit = function(circuitDefinition) {
@@ -23,17 +23,17 @@ exports.PhysicsService = function() {
             throw new Error('A circuit definition is needed to create the level!');
         }
         
-        var circuitId = mActiveCircuits.length + 1;
+        var circuitId = Object.keys(mActiveCircuits).length + 1;
         var circuit = {
             id: circuitId,
             definition: circuitDefinition,
             world: createWorld(),
-            cars: []
+            cars: {}
         };
         
         //TODO: do something with circuitDefinition, it should fill the world with it.
         
-        mActiveCircuits.push(circuit);
+        mActiveCircuits[circuitId] = circuit;
         
         return circuit.id;
     };
@@ -70,12 +70,12 @@ exports.PhysicsService = function() {
         
         if(circuit) {            
             var car = new Car(circuit.world, [0,0]);
-            carId = circuit.cars.length + 1;
-
-            circuit.cars.push({
+            carId = Object.keys(circuit.cars).length + 1;
+            
+            circuit.cars[carId] = {
                 id: carId,
                 body: car
-            });
+            };
         }
         
         return carId;
@@ -125,34 +125,50 @@ exports.PhysicsService = function() {
     // filter which circuit does he need the information from. That way both services
     // and gameFacade are agnostic to the fact that multiple circuits may exist
     this.getRenderInformation = function(circuitId) {        
-        var renderInformation = [];
+        var renderInformation = {};
         
         for(index in mActiveCircuits) {
             var circuit = mActiveCircuits[index];
             if(circuit) {
                 var circuitRenderInformation = {
-                    id: parseInt(index) + 1,
+                    id: circuit.id,
                     circuit: null,
                     cars: getCarsRenderInformation(circuit)
                 };
-                renderInformation.push(circuitRenderInformation);
+                renderInformation[circuit.id] = circuitRenderInformation;
             }   
         }
-        
-        
         
         return renderInformation;
     };
     
     this.getActiveCircuitId = function() {
-        var activeCircuitId = undefined;
-        if(mActiveCircuits.length > 0) {
-            activeCircuitId = 1;   
+        var activeCircuitId = undefined;        
+        if(Object.keys(mActiveCircuits).length > 0) {
+            var firstCircuitKey = Object.keys(mActiveCircuits)[0];            
+            activeCircuitId = mActiveCircuits[firstCircuitKey].id;   
         }
         return activeCircuitId;
     };
     
+    this.getNumberOfCarsInCircuit = function(circuitId) {
+        var numberOfCars = -1;
+        var circuit = getCircuit(circuitId);
+        if(circuit) {
+            numberOfCars = Object.keys(circuit.cars).length;
+        }
+        return numberOfCars;
+    };
     
+    this.removeCar = function(circuitId, carId) {
+        var car = getCarFromCircuit(circuitId, carId);
+        if(car) {
+            car.body.destroy();
+            var circuit = getCircuit(circuitId);
+            delete circuit.cars[carId];
+        }
+    };
+       
     // Private
     var createWorld = function() {
         var world = new p2.World();
@@ -163,7 +179,7 @@ exports.PhysicsService = function() {
     };
     
     var getCircuit = function(circuitId) {
-        return mActiveCircuits[circuitId - 1];  
+        return mActiveCircuits[circuitId];  
     };
     
     var getCarFromCircuit = function(circuitId, carId) {
@@ -171,7 +187,7 @@ exports.PhysicsService = function() {
         var car = undefined;
         
         if(circuit) {
-            car = circuit.cars[carId - 1];
+            car = circuit.cars[carId];
         }
         
         return car;
@@ -180,11 +196,11 @@ exports.PhysicsService = function() {
     var getCarsRenderInformation = function(circuit) {
         var carsRenderInformation = [];
         for(index in circuit.cars) {
-            var carBody = circuit.cars[index].body;
-            
+            var car = circuit.cars[index];
+                        
             var renderInformation = {
-                id: parseInt(index) + 1,
-                renderInformation: carBody.getRenderInformation()
+                id: car.id,
+                renderInformation: car.body.getRenderInformation()
             };
             carsRenderInformation.push(renderInformation);
         }
